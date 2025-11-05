@@ -18,7 +18,7 @@ A Node.js Express API that integrates with Google's Gemini AI to generate conten
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/hanifalkauni/gemini-ai-api-project](https://github.com/hanifalkauni/gemini-ai-api-project.git)
+git clone https://github.com/hanifalkauni/gemini-ai-api-project.git
 cd gemini-flash-api
 ```
 
@@ -34,7 +34,7 @@ cp .env.example .env
 
 4. Add your Google AI API key to the `.env` file:
 ```
-API_KEY=your_google_ai_api_key_here
+GEMINI_API_KEY=your_google_ai_api_key_here
 PORT=3000
 ```
 

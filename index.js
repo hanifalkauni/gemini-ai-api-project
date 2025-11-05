@@ -37,17 +37,27 @@ app.post('/generate-text', async(req, res) => {
     }
 });
 
-app.post("/generate-from-image", upload.single("image"), async (req, res) => {
+/**
+ * Creates a route handler for generating content from a file.
+ * @param {string} defaultPrompt - The default prompt to use if one isn't provided in the request.
+ * @returns {import('express').RequestHandler}
+ */
+const generateFromFileHandler = (defaultPrompt) => async (req, res) => {
     const { prompt } = req.body;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: 'File is required.' });
+    }
 
     try {
-       const fileBuffer = await fs.readFile(req.file.path);
-       const base64Image = fileBuffer.toString("base64");
+       const fileBuffer = await fs.readFile(file.path);
+       const base64Data = fileBuffer.toString("base64");
        const response = await ai.models.generateContent({
            model: GEMINI_MODEL,
            contents: [
-               { text: prompt , type: "text" },
-               { inlineData: { data: base64Image, mimeType: req.file.mimetype }}
+               { text: prompt ?? defaultPrompt , type: "text" },
+               { inlineData: { data: base64Data, mimeType: file.mimetype }}
             ],
        });
 
@@ -56,61 +66,10 @@ app.post("/generate-from-image", upload.single("image"), async (req, res) => {
         console.error(error);
         res.status(500).json({ error: error.message });
     } finally {
-        // Clean up the uploaded file
-        if (req.file) {
-            unlinkSync(req.file.path);
-        }
+        unlinkSync(file.path);
     }
-});
+};
 
-app.post("/generate-from-document", upload.single("document"), async (req, res) => {
-    const { prompt } = req.body;
-
-    try {
-       const fileBuffer = await fs.readFile(req.file.path);
-       const base64Document = fileBuffer.toString("base64");
-       const response = await ai.models.generateContent({
-           model: GEMINI_MODEL,
-           contents: [
-               { text: prompt ?? "Tolong buat ringkasan dari dokumen berikut" , type: "text" },
-               { inlineData: { data: base64Document, mimeType: req.file.mimetype }}
-            ],
-       });
-
-       res.status(200).json({ result: response.text });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
-    } finally {
-        // Clean up the uploaded file
-        if (req.file) {
-            unlinkSync(req.file.path);
-        }
-    }
-});
-
-app.post("/generate-from-audio", upload.single("audio"), async (req, res) => {
-    const { prompt } = req.body;
-
-    try {
-        const fileBuffer = await fs.readFile(req.file.path);
-        const base64Audio = fileBuffer.toString("base64");
-        const response = await ai.models.generateContent({
-            model: GEMINI_MODEL,
-            contents: [
-                { text: prompt ?? "Tolong buatkan transkrip dari rekaman berikut" , type: "text" },
-                { inlineData: { data: base64Audio, mimeType: req.file.mimetype }}
-            ],
-        });
-
-        res.status(200).json({ result: response.text });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
-    } finally {
-        // Clean up the uploaded file
-        if (req.file) {
-            unlinkSync(req.file.path);
-        }
-    }
-});
+app.post("/generate-from-image", upload.single("image"), generateFromFileHandler("Describe this image."));
+app.post("/generate-from-document", upload.single("document"), generateFromFileHandler("Please make a summary of the following document."));
+app.post("/generate-from-audio", upload.single("audio"), generateFromFileHandler("Please make a transcript of the following recording."));

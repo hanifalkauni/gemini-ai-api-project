@@ -95,7 +95,7 @@ Upload a document and get AI summary or analysis.
 - Content-Type: `multipart/form-data`
 - Fields:
   - `document`: Document file (required)
-  - `prompt`: Text prompt for document analysis (optional, defaults to Indonesian summary request)
+  - `prompt`: Text prompt for document analysis (optional)
 
 **Response:**
 ```json
@@ -113,7 +113,7 @@ Upload an audio file and get transcription.
 - Content-Type: `multipart/form-data`
 - Fields:
   - `audio`: Audio file (required)
-  - `prompt`: Text prompt for audio processing (optional, defaults to Indonesian transcription request)
+  - `prompt`: Text prompt for audio processing (optional)
 
 **Response:**
 ```json
